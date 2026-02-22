@@ -1,10 +1,94 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>My Output</title>
+<meta charset="UTF-8">
+<title>Heart</title>
+<style>
+    body {
+        margin: 0;
+        background: radial-gradient(circle at center, #0b0b0b, #000);
+        overflow: hidden;
+        font-family: Arial, sans-serif;
+    }
+    canvas {
+        display: block;
+    }
+    .text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: #ff003c;
+        font-size: 28px;
+        text-align: center;
+        letter-spacing: 2px;
+        text-shadow: 0 0 10px #ff003c;
+        pointer-events: none;
+    }
+    .sub {
+        font-size: 16px;
+        margin-top: 10px;
+        color: #ff6f91;
+    }
+</style>
 </head>
 <body>
-  <h1>Hello 👋</h1>
-  <p>This is my output</p>
+
+<canvas id="c"></canvas>
+
+<div class="text">
+    CAN WE PLEASE TALK??<br>JUST FOR ONCE...
+    <div class="sub">🏁 F1 MODE 🏁</div>
+</div>
+
+<script>
+const canvas = document.getElementById("c");
+const ctx = canvas.getContext("2d");
+
+function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+window.addEventListener("resize", resize);
+resize();
+
+let t = 0;
+
+function heart(a) {
+    return {
+        x: 16 * Math.pow(Math.sin(a), 3),
+        y: -(13 * Math.cos(a) - 5 * Math.cos(2*a) - 2 * Math.cos(3*a) - Math.cos(4*a))
+    };
+}
+
+function draw() {
+    ctx.fillStyle = "rgba(0,0,0,0.2)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.save();
+    ctx.translate(canvas.width/2, canvas.height/2);
+    ctx.scale(15 + Math.sin(t)*1.5, 15 + Math.sin(t)*1.5);
+
+    ctx.beginPath();
+    for (let i = 0; i < Math.PI * 2; i += 0.01) {
+        const p = heart(i);
+        ctx.lineTo(p.x, p.y);
+    }
+
+    ctx.strokeStyle = "#ff003c";
+    ctx.lineWidth = 0.15;
+    ctx.shadowColor = "#ff003c";
+    ctx.shadowBlur = 20;
+    ctx.stroke();
+
+    ctx.restore();
+
+    t += 0.03;
+    requestAnimationFrame(draw);
+}
+
+draw();
+</script>
+
 </body>
 </html>
