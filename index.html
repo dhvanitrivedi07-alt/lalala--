@@ -2,45 +2,60 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Heart</title>
-
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
+<title>Heart × F1 Theme</title>
 
 <style>
-body {
+html, body {
     margin: 0;
-    background: #050505;
+    padding: 0;
+    background: black;
     overflow: hidden;
-    font-family: Arial, sans-serif;
+    height: 100%;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
+/* Canvas */
 canvas {
     display: block;
 }
 
-.text {
+/* Speed streaks */
+.streak {
+    position: absolute;
+    width: 2px;
+    height: 120px;
+    background: linear-gradient(to bottom, transparent, #ff1e1e, transparent);
+    animation: streakMove 0.6s linear infinite;
+    opacity: 0.8;
+}
+
+@keyframes streakMove {
+    from { transform: translateY(-150px); }
+    to   { transform: translateY(110vh); }
+}
+
+/* Text */
+#message {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     color: white;
     text-align: center;
-    font-size: 20px;
-    line-height: 1.5;
+    font-size: 22px;
+    line-height: 1.6;
     opacity: 0;
-    transition: opacity 3s ease;
-    text-shadow: 0 0 12px #ff2800;
+    transition: opacity 2s ease;
+    z-index: 10;
 }
 </style>
 </head>
 
 <body>
 
-<canvas id="c"></canvas>
+<canvas id="canvas"></canvas>
 
-<div class="text" id="msg">
+<div id="message">
 I'm sorrryyyy to annoyy you!!!<br>
 bt I badly want to talk to you in person...!!!<br>
 can't we..!!???<br>
@@ -49,104 +64,74 @@ Atleast onceeeee...!!!!!
 </div>
 
 <script>
-const canvas = document.getElementById("c");
+const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
-const msg = document.getElementById("msg");
 
-function resize() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-}
-resize();
-window.addEventListener("resize", resize);
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
-// Heart math
+ctx.strokeStyle = "#ff1e1e";
+ctx.lineWidth = 3;
+ctx.shadowColor = "#ff1e1e";
+ctx.shadowBlur = 20;
+
+let t = 0;
+let drawing = true;
+
 function heart(t) {
-    return {
-        x: 16 * Math.pow(Math.sin(t), 3),
-        y: -(13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t))
-    };
+    const x = 16 * Math.pow(Math.sin(t), 3);
+    const y =
+        13 * Math.cos(t) -
+        5 * Math.cos(2 * t) -
+        2 * Math.cos(3 * t) -
+        Math.cos(4 * t);
+    return { x, y };
 }
 
-let drawProgress = 0;
-let phase = 1;
-let beat = 0;
-let streaks = [];
+let last = null;
 
-// Create speed streaks
-for (let i = 0; i < 80; i++) {
-    streaks.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        speed: 8 + Math.random() * 10
-    });
-}
+function drawHeart() {
+    if (!drawing) return;
 
-function drawStreaks() {
-    ctx.strokeStyle = "rgba(255,40,0,0.35)";
-    ctx.lineWidth = 2;
-    streaks.forEach(s => {
+    const p = heart(t);
+    const x = canvas.width / 2 + p.x * 20;
+    const y = canvas.height / 2 - p.y * 20;
+
+    if (last) {
         ctx.beginPath();
-        ctx.moveTo(s.x, s.y);
-        ctx.lineTo(s.x, s.y + 40);
+        ctx.moveTo(last.x, last.y);
+        ctx.lineTo(x, y);
         ctx.stroke();
-        s.y += s.speed;
-        if (s.y > canvas.height) {
-            s.y = -50;
-            s.x = Math.random() * canvas.width;
-        }
-    });
-}
-
-function animate() {
-    ctx.fillStyle = "rgba(0,0,0,0.25)";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    ctx.save();
-    ctx.translate(canvas.width/2, canvas.height/2);
-
-    // Stage 2 & 3: beating heart
-    let scale = phase >= 2 ? 16 + Math.sin(beat)*1.5 : 16;
-    ctx.scale(scale, scale);
-
-    ctx.beginPath();
-    for (let i = 0; i < drawProgress; i += 0.02) {
-        let p = heart(i);
-        ctx.lineTo(p.x, p.y);
     }
 
-    ctx.strokeStyle = "#ff2800";
-    ctx.lineWidth = 0.12;
-    ctx.shadowColor = "#ff2800";
-    ctx.shadowBlur = phase >= 2 ? 25 : 10;
-    ctx.stroke();
+    last = { x, y };
+    t += 0.02;
 
-    ctx.restore();
-
-    // Phase control
-    if (phase === 1) {
-        drawProgress += 0.03;
-        if (drawProgress >= Math.PI * 2) {
-            phase = 2;
-        }
-    } 
-    else if (phase === 2) {
-        drawStreaks();
-        beat += 0.05;
-        if (beat > 6) {
-            phase = 3;
-            msg.style.opacity = 1;
-        }
-    } 
-    else {
-        drawStreaks();
-        beat += 0.05;
+    if (t >= Math.PI * 2) {
+        drawing = false;
+        startF1();
+        return;
     }
 
-    requestAnimationFrame(animate);
+    requestAnimationFrame(drawHeart);
 }
 
-animate();
+drawHeart();
+
+/* F1 SPEED EFFECT */
+function startF1() {
+    for (let i = 0; i < 40; i++) {
+        const s = document.createElement("div");
+        s.className = "streak";
+        s.style.left = Math.random() * window.innerWidth + "px";
+        s.style.animationDelay = Math.random() * 0.6 + "s";
+        document.body.appendChild(s);
+    }
+
+    setTimeout(() => {
+        document.getElementById("message").style.opacity = 1;
+    }, 1500);
+}
 </script>
 
 </body>
